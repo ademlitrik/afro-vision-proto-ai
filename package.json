@@ -1,0 +1,66 @@
+{
+  "name": "afro-vision-proto-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-Powered Batch Photo Correction & Professional Photo Editing",
+  "author": "Tanyaradzwa Livingstone Bvute",
+  "homepage": "https://www.afrovisionmedia.co.za",
+  "license": "Commercial",
+  "main": "dist-electron/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ademlitrik/afro-vision-proto-ai.git"
+  },
+  "build": {
+    "appId": "com.guthum.afrovision",
+    "productName": "Afro Vision AI Studio",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    }
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build:electron && npm run build:vite",
+    "build:electron": "node scripts/build-electron.mjs",
+    "build:vite": "vite build",
+    "make": "npm run dist",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "test": "node scripts/run-test.mjs tests/verify-stage1.mjs",
+    "test:stage2": "node scripts/run-test.mjs tests/verify-stage2.mjs",
+    "test:stage3": "node scripts/run-test.mjs tests/verify-stage3.mjs",
+    "test:stage4": "node scripts/run-test.mjs tests/verify-stage4.mjs",
+    "test:stage5": "node scripts/run-test.mjs tests/verify-stage5.mjs",
+    "test:stage6": "node scripts/run-test.mjs tests/verify-stage6.mjs",
+    "test:stage7": "node scripts/run-test.mjs tests/verify-stage7.mjs"
+  },
+  "dependencies": {
+    "@types/exif-reader": "^1.0.0",
+    "better-sqlite3": "12.11.1",
+    "exif-reader": "^2.0.3",
+    "lucide-react": "^1.16.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.1",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0"
+  }
+}

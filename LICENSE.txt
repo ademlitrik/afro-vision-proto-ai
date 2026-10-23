@@ -1,0 +1,22 @@
+AFRO VISION PROTO AI
+Professional Photo Editing & AI Batch Correction Desktop Application
+
+Copyright © 2026 Afro Vision Media.
+Developed by Tanyaradzwa Bvute, Software Developer & Systems Architect.
+
+All rights reserved.
+
+This software and its source code are proprietary to Afro Vision Media.
+Unauthorized copying, modification, distribution, or use of this software,
+in whole or in part, without the express written permission of Afro Vision Media
+is strictly prohibited.
+
+Developer: Tanyaradzwa Bvute
+Organisation: Afro Vision Media
+Contact: afrovisionmedia.co.zw
+
+For licensing enquiries, please contact Afro Vision Media.
+
+"My vision is to build technology that solves real problems, simplifies complex
+processes, and creates meaningful digital opportunities for businesses and communities."
+— Tanyaradzwa Bvute

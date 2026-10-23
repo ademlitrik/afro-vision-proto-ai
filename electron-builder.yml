@@ -1,0 +1,64 @@
+appId: com.afrovisionmedia.afrovisionprotoai
+productName: Afro Vision Proto AI
+copyright: "Copyright © 2026 Afro Vision Media. Developed by Tanyaradzwa Livingstone Bvute. All rights reserved."
+
+directories:
+  output: release
+  buildResources: assets
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - node_modules/**/*
+  - package.json
+
+asar: true
+buildDependenciesFromSource: false
+npmRebuild: false
+asarUnpack:
+  - "**/node_modules/sharp/**/*"
+  - "**/node_modules/@img/**/*"
+  - "**/node_modules/better-sqlite3/**/*"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icons/icon.ico
+  artifactName: "${productName}-Setup-${version}.${ext}"
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "Afro Vision Proto AI"
+  installerIcon: assets/icons/icon.ico
+  uninstallerIcon: assets/icons/icon.ico
+  deleteAppDataOnUninstall: false
+  license: LICENSE.txt
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.photography
+  icon: assets/icons/icon.ico
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  darkModeSupport: true
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Graphics
+  icon: assets/icons/icon.ico
+  artifactName: "${productName}-${version}.${ext}"
