@@ -19,7 +19,8 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "artifactName": "Afro-Vision-AI-Studio-1.0.0.${ext}"
     }
   },
   "scripts": {
@@ -30,7 +31,7 @@
     "make": "npm run dist",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
-    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac": "npm run build && electron-builder --mac --publish never",
     "test": "node scripts/run-test.mjs tests/verify-stage1.mjs",
     "test:stage2": "node scripts/run-test.mjs tests/verify-stage2.mjs",
     "test:stage3": "node scripts/run-test.mjs tests/verify-stage3.mjs",
