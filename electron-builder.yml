@@ -1,5 +1,5 @@
 appId: com.afrovisionmedia.afrovisionprotoai
-productName: Afro Vision Proto AI
+productName: Afro Vision AI Studio
 copyright: "Copyright © 2026 Afro Vision Media. Developed by Tanyaradzwa Livingstone Bvute. All rights reserved."
 
 directories:
@@ -26,7 +26,7 @@ win:
       arch:
         - x64
   icon: assets/icons/icon.ico
-  artifactName: "${productName}-Setup-${version}.${ext}"
+  artifactName: "Afro-Vision-AI-Studio-Setup-${version}.${ext}"
   requestedExecutionLevel: asInvoker
 
 nsis:
@@ -36,7 +36,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: "Afro Vision Proto AI"
+  shortcutName: "Afro Vision AI Studio"
   installerIcon: assets/icons/icon.ico
   uninstallerIcon: assets/icons/icon.ico
   deleteAppDataOnUninstall: false

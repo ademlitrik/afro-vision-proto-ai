@@ -1,6 +1,6 @@
 {
   "name": "afro-vision-proto-ai",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "AI-Powered Batch Photo Correction & Professional Photo Editing",
   "author": "Tanyaradzwa Livingstone Bvute",
@@ -10,18 +10,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ademlitrik/afro-vision-proto-ai.git"
-  },
-  "build": {
-    "appId": "com.guthum.afrovision",
-    "productName": "Afro Vision AI Studio",
-    "directories": {
-      "output": "dist"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "build/icon.icns",
-      "artifactName": "Afro-Vision-AI-Studio-1.0.0.${ext}"
-    }
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
