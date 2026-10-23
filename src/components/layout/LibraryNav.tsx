@@ -16,9 +16,7 @@ import {
 import { LibraryFilterType } from '../../types/models';
 
 export const LibraryNav: React.FC = () => {
-  const { activeFilter, setActiveFilter, counts, systemInfo, setSearchQuery, searchQuery } = useApp();
-  const { showSidePanels } = useApp();
-  const { activeFilter, setActiveFilter, counts, systemInfo, setSearchQuery, searchQuery } = useApp();
+  const { activeFilter, setActiveFilter, counts, systemInfo, setSearchQuery, searchQuery, showSidePanels } = useApp();
 
   interface NavItem {
     id: LibraryFilterType;
