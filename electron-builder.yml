@@ -50,6 +50,7 @@ mac:
         - arm64
   artifactName: "Afro-Vision-AI-Studio-${version}.${ext}"
   category: public.app-category.photography
+  icon: assets/icons/icon.png
   hardenedRuntime: true
   gatekeeperAssess: false
   darkModeSupport: true
