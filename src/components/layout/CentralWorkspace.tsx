@@ -21,12 +21,19 @@ import {
   Eye,
   RotateCw,
   ZoomIn,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Copy,
+  Scissors,
+  Clipboard,
+  CopyPlus,
+  FolderSymlink
 } from 'lucide-react';
 import { formatBytes } from '../../utils/formatters';
 import { FlagType } from '../../types/models';
 import { computePreviewFilterStyle } from '../../utils/previewFilters';
 import { PhotoContextMenu } from '../common/PhotoContextMenu';
+import { LightboxModal } from '../common/LightboxModal';
 
 export const CentralWorkspace: React.FC = () => {
   const {
@@ -66,7 +73,15 @@ export const CentralWorkspace: React.FC = () => {
     setIsExportModalOpen,
     // added for shortcuts and panel toggle
     toggleSidePanels,
-    setIsShortcutsOpen
+    setIsShortcutsOpen,
+    deleteSelectedPhotos,
+    deletePhoto,
+    copySelectedPhotos,
+    cutSelectedPhotos,
+    pastePhotos,
+    photoClipboard,
+    moveSelectedPhotos,
+    projects
   } = useApp();
 
   const [workspaceMode, setWorkspaceMode] = useState<'grid' | 'loupe' | 'split'>('grid');
@@ -91,6 +106,7 @@ export const CentralWorkspace: React.FC = () => {
   const [isBeforeActive, setIsBeforeActive] = useState<boolean>(false);
   const [loupeZoom, setLoupeZoom] = useState<'fit' | '100' | '200'>('fit');
   const [contextMenu, setContextMenu] = useState<{ photoId: string; x: number; y: number } | null>(null);
+  const [lightboxPhotoId, setLightboxPhotoId] = useState<string | null>(null);
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [panStart, setPanStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -147,6 +163,27 @@ export const CentralWorkspace: React.FC = () => {
     if (isMod && e.shiftKey && (e.key === 'v' || e.key === 'V')) {
       e.preventDefault();
       pasteEdits();
+      return;
+    }
+
+    // Copy Photo(s): Ctrl+C
+    if (isMod && !e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+      e.preventDefault();
+      copySelectedPhotos();
+      return;
+    }
+
+    // Cut Photo(s): Ctrl+X
+    if (isMod && !e.shiftKey && (e.key === 'x' || e.key === 'X')) {
+      e.preventDefault();
+      cutSelectedPhotos();
+      return;
+    }
+
+    // Paste Photo(s): Ctrl+V
+    if (isMod && !e.shiftKey && (e.key === 'v' || e.key === 'V')) {
+      e.preventDefault();
+      pastePhotos();
       return;
     }
 
@@ -216,6 +253,22 @@ export const CentralWorkspace: React.FC = () => {
       setWorkspaceMode('grid');
       return;
     }
+
+    // Delete selected photos
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (selectedPhotoIds.length > 0) {
+        e.preventDefault();
+        deleteSelectedPhotos();
+      }
+      return;
+    }
+
+    // Open lightbox with Enter
+    if (e.key === 'Enter' && activePhoto && workspaceMode === 'grid') {
+      e.preventDefault();
+      setLightboxPhotoId(activePhoto.id);
+      return;
+    }
   }, [activePhoto, photos, selectPhoto, selectAllPhotos, updateRating, updateFlag]);
 
   useEffect(() => {
@@ -283,7 +336,7 @@ export const CentralWorkspace: React.FC = () => {
 
   const handlePhotoDoubleClick = (photoId: string) => {
     selectPhoto(photoId);
-    setWorkspaceMode('loupe');
+    setLightboxPhotoId(photoId);
   };
 
   const handleSortChange = (value: string) => {
@@ -601,8 +654,47 @@ export const CentralWorkspace: React.FC = () => {
             Export ({selectedPhotoIds.length})
           </button>
           <div style={styles.batchDivider} />
+          <button style={styles.batchBtn} onClick={copySelectedPhotos} title="Copy Selected Photos (Ctrl+C)">
+            <Copy size={11} color="#a78bfa" /> Copy
+          </button>
+          <button style={styles.batchBtn} onClick={cutSelectedPhotos} title="Cut Selected Photos (Ctrl+X)">
+            <Scissors size={11} color="#fb923c" /> Cut
+          </button>
+          {photoClipboard && (
+            <button style={styles.batchBtn} onClick={pastePhotos} title="Paste Clipboard Photos (Ctrl+V)">
+              <Clipboard size={11} color="#34d399" /> Paste ({photoClipboard.ids.length})
+            </button>
+          )}
+          {projects.length > 1 && (
+            <div style={styles.batchGroup}>
+              <span style={styles.batchLabel}>Move to:</span>
+              <select
+                style={styles.batchSelect}
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    moveSelectedPhotos(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+              >
+                <option value="" disabled>Select Project...</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div style={styles.batchDivider} />
           <button style={styles.batchBtn} onClick={clearSelection}>
             Deselect All
+          </button>
+          <button
+            style={{ ...styles.batchBtn, color: '#f87171' }}
+            onClick={deleteSelectedPhotos}
+            title="Remove selected photos from catalog (Delete key)"
+          >
+            <Trash2 size={11} color="#f87171" /> Delete ({selectedPhotoIds.length})
           </button>
         </div>
       )}
@@ -907,6 +999,19 @@ export const CentralWorkspace: React.FC = () => {
                         {isSelected ? <CheckSquare size={14} /> : <Square size={14} />}
                       </div>
                     )}
+
+                    {/* Quick Lightbox / Enlarge Button */}
+                    <button
+                      style={styles.cardEnlargeBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        selectPhoto(p.id);
+                        setLightboxPhotoId(p.id);
+                      }}
+                      title="Inspect & Zoom (Double-Click / Enter)"
+                    >
+                      <Maximize2 size={11} color="#ffffff" />
+                    </button>
                   </div>
 
                   {/* Card Footer */}
@@ -967,6 +1072,19 @@ export const CentralWorkspace: React.FC = () => {
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Lightbox Fullscreen Photo Viewer */}
+      {lightboxPhotoId && photos.length > 0 && (
+        <LightboxModal
+          photos={photos}
+          initialPhotoId={lightboxPhotoId}
+          onClose={() => setLightboxPhotoId(null)}
+          onRating={updateRating}
+          onFavorite={toggleFavorite}
+          onFlag={updateFlag}
+          getMediaUrl={getMediaUrl}
         />
       )}
     </main>
@@ -1622,6 +1740,20 @@ const styles: Record<string, React.CSSProperties> = {
   },
   selectionCheckboxActive: {
     color: 'var(--accent-blue)'
+  },
+  cardEnlargeBtn: {
+    position: 'absolute',
+    bottom: 6,
+    right: 26,
+    backgroundColor: 'rgba(20, 20, 25, 0.75)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    padding: '3px 4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: 5
   },
   cardFooter: {
     padding: '6px 8px',

@@ -11,7 +11,10 @@ import {
   Download,
   Trash2,
   Sparkles,
-  Heart
+  Heart,
+  CopyPlus,
+  Scissors,
+  Clipboard
 } from 'lucide-react';
 import { FlagType } from '../../types/models';
 
@@ -39,7 +42,13 @@ export const PhotoContextMenu: React.FC<PhotoContextMenuProps> = ({
     pasteEdits,
     setIsExportModalOpen,
     analyzeCurrentPhoto,
-    applyAiRecommendations
+    applyAiRecommendations,
+    deletePhoto,
+    duplicatePhoto,
+    photoClipboard,
+    copySelectedPhotos,
+    cutSelectedPhotos,
+    pastePhotos
   } = useApp();
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -186,6 +195,35 @@ export const PhotoContextMenu: React.FC<PhotoContextMenuProps> = ({
       <button style={styles.menuItem} onClick={handleExport}>
         <Download size={13} color="#3b82f6" />
         <span>Export Photograph... (Ctrl+E)</span>
+      </button>
+
+      <div style={styles.divider} />
+
+      <button style={styles.menuItem} onClick={() => { selectPhoto(photoId); copySelectedPhotos(); onClose(); }}>
+        <Copy size={13} color="#a78bfa" />
+        <span>Copy Photo (Ctrl+C)</span>
+      </button>
+
+      <button style={styles.menuItem} onClick={() => { selectPhoto(photoId); cutSelectedPhotos(); onClose(); }}>
+        <Scissors size={13} color="#fb923c" />
+        <span>Cut Photo (Ctrl+X)</span>
+      </button>
+
+      {photoClipboard && (
+        <button style={styles.menuItem} onClick={() => { pastePhotos(); onClose(); }}>
+          <Clipboard size={13} color="#34d399" />
+          <span>Paste Photo ({photoClipboard.ids.length} in clipboard)</span>
+        </button>
+      )}
+
+      <button style={styles.menuItem} onClick={() => { duplicatePhoto(photoId); onClose(); }}>
+        <CopyPlus size={13} color="#60a5fa" />
+        <span>Duplicate (Virtual Copy)</span>
+      </button>
+
+      <button style={{ ...styles.menuItem, color: '#f87171' }} onClick={() => { deletePhoto(photoId); onClose(); }}>
+        <Trash2 size={13} color="#f87171" />
+        <span>Remove from Catalog (Del)</span>
       </button>
     </div>
   );

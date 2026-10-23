@@ -94,6 +94,23 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
     return PhotoHandler.handleExportBatch(payload);
   });
 
+  // Delete / Duplicate Photos
+  ipcMain.handle(IPC_CHANNELS.PHOTO_DELETE, (_event, payload) => {
+    return PhotoHandler.handleDeletePhoto(payload);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.PHOTO_DELETE_BATCH, (_event, payload) => {
+    return PhotoHandler.handleDeletePhotosBatch(payload);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.PHOTO_DUPLICATE, (_event, payload) => {
+    return PhotoHandler.handleDuplicatePhoto(payload);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.PHOTO_MOVE_BATCH, (_event, payload) => {
+    return PhotoHandler.handleMovePhotosBatch(payload);
+  });
+
   // Cache
   ipcMain.handle(IPC_CHANNELS.CACHE_GET_STATS, () => {
     return CacheHandler.handleGetStats();

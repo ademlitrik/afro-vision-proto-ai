@@ -32,6 +32,7 @@ const SHORTCUTS: ShortcutItem[] = [
   { keys: ['Ctrl', '+'], description: 'Zoom In on Canvas', category: 'Navigation & Views' },
   { keys: ['Ctrl', '-'], description: 'Zoom Out on Canvas', category: 'Navigation & Views' },
   { keys: ['Ctrl', '0'], description: 'Fit Photo to Canvas Window', category: 'Navigation & Views' },
+  { keys: ['Enter'], description: 'Open Selected Photo in Fullscreen Lightbox', category: 'Navigation & Views' },
   { keys: ['Tab'], description: 'Toggle Side Panels (Full Canvas View)', category: 'Navigation & Views' },
   { keys: ['F11'], description: 'Toggle Full Screen Mode', category: 'Navigation & Views' },
   { keys: ['←', '→'], description: 'Navigate Previous / Next Photo', category: 'Navigation & Views' },
@@ -45,6 +46,10 @@ const SHORTCUTS: ShortcutItem[] = [
   { keys: ['0'], description: 'Clear Photo Star Rating', category: 'Culling & Flags' },
   { keys: ['Ctrl', 'A'], description: 'Select All Photos in View', category: 'Culling & Flags' },
   { keys: ['Ctrl', 'D'], description: 'Deselect All Photos', category: 'Culling & Flags' },
+  { keys: ['Ctrl', 'C'], description: 'Copy Selected Photo(s) to Clipboard', category: 'Culling & Flags' },
+  { keys: ['Ctrl', 'X'], description: 'Cut Selected Photo(s) for Moving', category: 'Culling & Flags' },
+  { keys: ['Ctrl', 'V'], description: 'Paste / Duplicate Photo(s) from Clipboard', category: 'Culling & Flags' },
+  { keys: ['Del', 'Backspace'], description: 'Remove Selected Photo(s) from Catalog', category: 'Culling & Flags' },
 
   // Editing & Adjustments
   { keys: ['Ctrl', 'Z'], description: 'Undo Last Slider / Adjustment', category: 'Editing & Adjustments' },

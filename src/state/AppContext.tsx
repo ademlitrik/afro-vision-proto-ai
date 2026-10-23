@@ -79,6 +79,13 @@ interface AppContextType {
   rotatePhoto: (direction: 'cw' | 'ccw') => Promise<void>;
   flipPhoto: (direction: 'h' | 'v') => Promise<void>;
 
+  // Picture Clipboard & Movement (Copy/Cut/Paste/Move)
+  photoClipboard: { ids: string[]; mode: 'copy' | 'cut' } | null;
+  copySelectedPhotos: () => void;
+  cutSelectedPhotos: () => void;
+  pastePhotos: () => Promise<void>;
+  moveSelectedPhotos: (targetProjectId: string) => Promise<void>;
+
   // Setters & Actions
   setCurrentView: (view: ViewMode) => void;
   setActiveFilter: (filter: LibraryFilterType) => void;
@@ -104,6 +111,9 @@ interface AppContextType {
   updateRatingBatch: (rating: number) => Promise<void>;
   updateFlagBatch: (flag: FlagType) => Promise<void>;
   updateFavoriteBatch: (isFavorite: boolean) => Promise<void>;
+  deleteSelectedPhotos: () => Promise<void>;
+  deletePhoto: (photoId: string) => Promise<void>;
+  duplicatePhoto: (photoId: string) => Promise<void>;
 
   // Real Image Analysis Engine & Edits (Stage 4)
   analyzeCurrentPhoto: () => Promise<void>;
@@ -178,6 +188,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleSidePanels = () => setShowSidePanels(prev => !prev);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState<boolean>(false);
   const [copiedEdits, setCopiedEdits] = useState<Partial<EditParameters> | null>(null);
+  const [photoClipboard, setPhotoClipboard] = useState<{ ids: string[]; mode: 'copy' | 'cut' } | null>(null);
   const [undoStack, setUndoStack] = useState<EditParameters[]>([]);
   const [redoStack, setRedoStack] = useState<EditParameters[]>([]);
 
@@ -452,6 +463,103 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (activeProject) {
       const countData = await apiService.getCounts(activeProject.id);
       setCounts(countData);
+    }
+  };
+
+  // --- Delete & Duplicate ---
+
+  const deletePhoto = async (photoId: string) => {
+    try {
+      await apiService.deletePhoto(photoId);
+      setPhotos(prev => prev.filter(p => p.id !== photoId));
+      setSelectedPhotoIds(prev => prev.filter(id => id !== photoId));
+      if (activePhoto?.id === photoId) {
+        setActivePhoto(null);
+        setActivePhotoMetadata(null);
+        setActiveEdits(null);
+        setActiveAnalysis(null);
+      }
+      if (activeProject) {
+        const countData = await apiService.getCounts(activeProject.id);
+        setCounts(countData);
+      }
+    } catch (err) {
+      console.error('[DELETE PHOTO ERROR]', err);
+    }
+  };
+
+  const deleteSelectedPhotos = async () => {
+    if (selectedPhotoIds.length === 0) return;
+    try {
+      await apiService.deletePhotosBatch(selectedPhotoIds);
+      const idsToRemove = new Set(selectedPhotoIds);
+      setPhotos(prev => prev.filter(p => !idsToRemove.has(p.id)));
+      if (activePhoto && idsToRemove.has(activePhoto.id)) {
+        setActivePhoto(null);
+        setActivePhotoMetadata(null);
+        setActiveEdits(null);
+        setActiveAnalysis(null);
+      }
+      setSelectedPhotoIds([]);
+      if (activeProject) {
+        const countData = await apiService.getCounts(activeProject.id);
+        setCounts(countData);
+      }
+    } catch (err) {
+      console.error('[DELETE BATCH ERROR]', err);
+    }
+  };
+
+  const duplicatePhoto = async (photoId: string) => {
+    try {
+      await apiService.duplicatePhoto(photoId);
+      await refreshPhotos();
+    } catch (err) {
+      console.error('[DUPLICATE PHOTO ERROR]', err);
+    }
+  };
+
+  const copySelectedPhotos = () => {
+    const targets = selectedPhotoIds.length > 0 ? selectedPhotoIds : (activePhoto ? [activePhoto.id] : []);
+    if (targets.length === 0) return;
+    setPhotoClipboard({ ids: targets, mode: 'copy' });
+  };
+
+  const cutSelectedPhotos = () => {
+    const targets = selectedPhotoIds.length > 0 ? selectedPhotoIds : (activePhoto ? [activePhoto.id] : []);
+    if (targets.length === 0) return;
+    setPhotoClipboard({ ids: targets, mode: 'cut' });
+  };
+
+  const pastePhotos = async () => {
+    if (!photoClipboard || photoClipboard.ids.length === 0) return;
+    try {
+      if (photoClipboard.mode === 'copy') {
+        for (const id of photoClipboard.ids) {
+          await apiService.duplicatePhoto(id);
+        }
+        await refreshPhotos();
+      } else if (photoClipboard.mode === 'cut') {
+        if (activeProject) {
+          await apiService.movePhotosBatch(photoClipboard.ids, activeProject.id);
+          await refreshPhotos();
+        }
+        setPhotoClipboard(null);
+      }
+    } catch (err) {
+      console.error('[PASTE PHOTOS ERROR]', err);
+    }
+  };
+
+  const moveSelectedPhotos = async (targetProjectId: string) => {
+    const targets = selectedPhotoIds.length > 0 ? selectedPhotoIds : (activePhoto ? [activePhoto.id] : []);
+    if (targets.length === 0 || !targetProjectId) return;
+    try {
+      await apiService.movePhotosBatch(targets, targetProjectId);
+      await refreshPhotos();
+      clearSelection();
+    } catch (err) {
+      console.error('[MOVE PHOTOS ERROR]', err);
     }
   };
 
@@ -924,6 +1032,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateRatingBatch,
         updateFlagBatch,
         updateFavoriteBatch,
+        deleteSelectedPhotos,
+        deletePhoto,
+        duplicatePhoto,
+        photoClipboard,
+        copySelectedPhotos,
+        cutSelectedPhotos,
+        pastePhotos,
+        moveSelectedPhotos,
         analyzeCurrentPhoto,
         updateEditParam,
         applyAiRecommendations,

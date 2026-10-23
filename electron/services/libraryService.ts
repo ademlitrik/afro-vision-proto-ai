@@ -1,5 +1,7 @@
 import { getDatabase } from '../database/connection';
 import { PhotoRecord } from '../database/schema';
+// PhotoRecord re-exported for use in handlers
+export type { PhotoRecord };
 
 export type LibraryFilterType = 
   | 'all' 
@@ -257,5 +259,124 @@ export class LibraryService {
       return count;
     });
     return updateBatch();
+  }
+
+  /**
+   * Removes a single photo from the catalog (non-destructive: does NOT delete the source file).
+   * Also removes associated edits, AI analyses, and metadata rows.
+   */
+  public static deletePhoto(photoId: string): boolean {
+    const db = getDatabase();
+    const remove = db.transaction(() => {
+      db.prepare('DELETE FROM photo_metadata WHERE photo_id = ?').run(photoId);
+      db.prepare('DELETE FROM edits WHERE photo_id = ?').run(photoId);
+      db.prepare('DELETE FROM ai_analyses WHERE photo_id = ?').run(photoId);
+      const res = db.prepare('DELETE FROM photos WHERE id = ?').run(photoId);
+      return res.changes > 0;
+    });
+    return remove();
+  }
+
+  /**
+   * Removes multiple photos from the catalog in a single transaction.
+   */
+  public static deletePhotosBatch(photoIds: string[]): number {
+    if (photoIds.length === 0) return 0;
+    const db = getDatabase();
+    const removeBatch = db.transaction(() => {
+      let count = 0;
+      for (const id of photoIds) {
+        db.prepare('DELETE FROM photo_metadata WHERE photo_id = ?').run(id);
+        db.prepare('DELETE FROM edits WHERE photo_id = ?').run(id);
+        db.prepare('DELETE FROM ai_analyses WHERE photo_id = ?').run(id);
+        const res = db.prepare('DELETE FROM photos WHERE id = ?').run(id);
+        count += res.changes;
+      }
+      return count;
+    });
+    return removeBatch();
+  }
+
+  /**
+   * Moves multiple photos to another project in the catalog.
+   */
+  public static movePhotosBatch(photoIds: string[], targetProjectId: string): number {
+    if (photoIds.length === 0 || !targetProjectId) return 0;
+    const db = getDatabase();
+    const now = Date.now();
+    const stmt = db.prepare('UPDATE photos SET project_id = ?, updated_at = ? WHERE id = ?');
+    const moveBatch = db.transaction(() => {
+      let count = 0;
+      for (const id of photoIds) {
+        const res = stmt.run(targetProjectId, now, id);
+        count += res.changes;
+      }
+      return count;
+    });
+    return moveBatch();
+  }
+
+  /**
+   * Creates a virtual duplicate of a photo in the catalog.
+   * The duplicate points to the same source file but gets its own catalog record and fresh edits.
+   */
+  public static duplicatePhoto(photoId: string): PhotoRecord | null {
+    const db = getDatabase();
+    const original = db.prepare('SELECT * FROM photos WHERE id = ?').get(photoId) as PhotoRecord | undefined;
+    if (!original) return null;
+
+    const newId = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const now = Date.now();
+    const baseName = original.file_name.replace(/(\.[^.]+)$/, '');
+    const ext = original.file_name.match(/(\.[^.]+)$/)?.[1] || '';
+    const newFileName = `${baseName}_copy${ext}`;
+
+    const duplicate = db.transaction(() => {
+      db.prepare(`
+        INSERT INTO photos (id, project_id, file_path, file_name, file_size, file_format, file_hash,
+          width, height, thumbnail_path, preview_path, rating, flag, is_favorite, import_date, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, 'unflagged', 0, ?, ?, ?)
+      `).run(
+        newId,
+        original.project_id,
+        original.file_path,
+        newFileName,
+        original.file_size,
+        original.file_format,
+        original.width,
+        original.height,
+        original.thumbnail_path,
+        original.preview_path,
+        now,
+        now,
+        now
+      );
+
+      // Copy edits from original if they exist
+      const existingEdits = db.prepare('SELECT * FROM edits WHERE photo_id = ?').get(photoId) as Record<string, unknown> | undefined;
+      if (existingEdits) {
+        db.prepare(`
+          INSERT INTO edits (photo_id, version, exposure, contrast, highlights, shadows, whites, blacks,
+            temperature, tint, vibrance, saturation, texture, clarity, dehaze, sharpening, noise_reduction,
+            lens_profile_enabled, chromatic_aberration, distortion, vignette, crop_x, crop_y, crop_w, crop_h,
+            rotate, flip_h, flip_v, skin_protection_enabled, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          newId,
+          existingEdits.version, existingEdits.exposure, existingEdits.contrast,
+          existingEdits.highlights, existingEdits.shadows, existingEdits.whites, existingEdits.blacks,
+          existingEdits.temperature, existingEdits.tint, existingEdits.vibrance, existingEdits.saturation,
+          existingEdits.texture, existingEdits.clarity, existingEdits.dehaze, existingEdits.sharpening,
+          existingEdits.noise_reduction, existingEdits.lens_profile_enabled, existingEdits.chromatic_aberration,
+          existingEdits.distortion, existingEdits.vignette, existingEdits.crop_x, existingEdits.crop_y,
+          existingEdits.crop_w, existingEdits.crop_h, existingEdits.rotate, existingEdits.flip_h,
+          existingEdits.flip_v, existingEdits.skin_protection_enabled, now
+        );
+      }
+
+      return db.prepare('SELECT * FROM photos WHERE id = ?').get(newId) as PhotoRecord;
+    });
+
+    return duplicate();
   }
 }

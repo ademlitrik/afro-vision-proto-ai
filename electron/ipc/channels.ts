@@ -20,6 +20,10 @@ export const IPC_CHANNELS = {
   PHOTO_TOGGLE_FAVORITE: 'photo:toggleFavorite',
   PHOTO_UPDATE_FAVORITE_BATCH: 'photo:updateFavoriteBatch',
   PHOTO_GET_METADATA: 'photo:getMetadata',
+  PHOTO_DELETE: 'photo:delete',
+  PHOTO_DELETE_BATCH: 'photo:deleteBatch',
+  PHOTO_DUPLICATE: 'photo:duplicate',
+  PHOTO_MOVE_BATCH: 'photo:moveBatch',
 
   // Import Engine
   PHOTO_IMPORT_FILES: 'photo:importFiles',

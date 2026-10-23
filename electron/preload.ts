@@ -94,8 +94,11 @@ export interface AfroVisionAPI {
   updateFlagBatch: (photoIds: string[], flag: 'pick' | 'unflagged' | 'reject') => Promise<number>;
   toggleFavorite: (photoId: string) => Promise<boolean>;
   updateFavoriteBatch: (photoIds: string[], isFavorite: boolean) => Promise<number>;
-  getPhotoMetadata: (photoId: string) => Promise<{
-    photo_id: string;
+  deletePhoto: (photoId: string) => Promise<boolean>;
+  deletePhotosBatch: (photoIds: string[]) => Promise<number>;
+  duplicatePhoto: (photoId: string) => Promise<any>;
+  movePhotosBatch: (photoIds: string[], targetProjectId: string) => Promise<number>;
+  getPhotoMetadata: (photoId: string) => Promise<{    photo_id: string;
     camera_make: string | null;
     camera_model: string | null;
     lens_model: string | null;
@@ -214,6 +217,10 @@ const api: AfroVisionAPI = {
   updateFlagBatch: (photoIds, flag) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_UPDATE_FLAG_BATCH, { photoIds, flag }),
   toggleFavorite: (photoId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_TOGGLE_FAVORITE, { photoId }),
   updateFavoriteBatch: (photoIds, isFavorite) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_UPDATE_FAVORITE_BATCH, { photoIds, isFavorite }),
+  deletePhoto: (photoId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_DELETE, { photoId }),
+  deletePhotosBatch: (photoIds) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_DELETE_BATCH, { photoIds }),
+  duplicatePhoto: (photoId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_DUPLICATE, { photoId }),
+  movePhotosBatch: (photoIds, targetProjectId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_MOVE_BATCH, { photoIds, targetProjectId }),
   getPhotoMetadata: (photoId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_GET_METADATA, { photoId }),
 
   importFiles: (sources, projectId) => ipcRenderer.invoke(IPC_CHANNELS.PHOTO_IMPORT_FILES, { sources, projectId }),

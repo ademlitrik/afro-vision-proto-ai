@@ -43,6 +43,10 @@ export interface AfroVisionAPI {
   updateFlagBatch: (photoIds: string[], flag: FlagType) => Promise<number>;
   toggleFavorite: (photoId: string) => Promise<boolean>;
   updateFavoriteBatch: (photoIds: string[], isFavorite: boolean) => Promise<number>;
+  deletePhoto: (photoId: string) => Promise<boolean>;
+  deletePhotosBatch: (photoIds: string[]) => Promise<number>;
+  duplicatePhoto: (photoId: string) => Promise<Photo>;
+  movePhotosBatch: (photoIds: string[], targetProjectId: string) => Promise<number>;
   getPhotoMetadata: (photoId: string) => Promise<PhotoMetadata | null>;
 
   // Import Engine

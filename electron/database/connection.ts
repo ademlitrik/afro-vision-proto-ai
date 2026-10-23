@@ -35,10 +35,14 @@ export function initDatabase(config: DatabaseConfig = {}): Database.Database {
   });
 
   // Performance and durability pragmas for desktop photography catalogs
-  db.pragma('journal_mode = WAL');
+  db.pragma('busy_timeout = 5000');
+  try {
+    db.pragma('journal_mode = WAL');
+  } catch (err) {
+    console.warn('[DB] WAL journal_mode warning:', err);
+  }
   db.pragma('synchronous = NORMAL');
   db.pragma('foreign_keys = ON');
-  db.pragma('busy_timeout = 5000');
 
   // Run schema migrations
   runMigrations(db);

@@ -192,4 +192,48 @@ export class PhotoHandler {
       maxDimension
     });
   }
+
+  public static handleDeletePhoto(payload: unknown): boolean {
+    if (typeof payload !== 'object' || payload === null) {
+      throw new Error('Invalid delete photo payload');
+    }
+    const { photoId } = payload as { photoId?: unknown };
+    if (typeof photoId !== 'string') {
+      throw new Error('Valid photo ID is required');
+    }
+    return LibraryService.deletePhoto(photoId);
+  }
+
+  public static handleDeletePhotosBatch(payload: unknown): number {
+    if (typeof payload !== 'object' || payload === null) {
+      throw new Error('Invalid delete photos batch payload');
+    }
+    const { photoIds } = payload as { photoIds?: unknown };
+    if (!Array.isArray(photoIds)) {
+      throw new Error('Photo IDs array is required');
+    }
+    return LibraryService.deletePhotosBatch(photoIds as string[]);
+  }
+
+  public static handleDuplicatePhoto(payload: unknown) {
+    if (typeof payload !== 'object' || payload === null) {
+      throw new Error('Invalid duplicate photo payload');
+    }
+    const { photoId } = payload as { photoId?: unknown };
+    if (typeof photoId !== 'string') {
+      throw new Error('Valid photo ID is required');
+    }
+    return LibraryService.duplicatePhoto(photoId);
+  }
+
+  public static handleMovePhotosBatch(payload: unknown): number {
+    if (typeof payload !== 'object' || payload === null) {
+      throw new Error('Invalid move photos payload');
+    }
+    const { photoIds, targetProjectId } = payload as { photoIds?: unknown; targetProjectId?: unknown };
+    if (!Array.isArray(photoIds) || typeof targetProjectId !== 'string') {
+      throw new Error('Photo IDs array and targetProjectId string are required');
+    }
+    return LibraryService.movePhotosBatch(photoIds as string[], targetProjectId);
+  }
 }

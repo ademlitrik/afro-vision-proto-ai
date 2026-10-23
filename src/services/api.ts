@@ -124,6 +124,22 @@ export const apiService: AfroVisionAPI = {
     if (window.afroVisionAPI) return window.afroVisionAPI.updateFavoriteBatch(photoIds, isFavorite);
     return 0;
   },
+  deletePhoto: async (photoId) => {
+    if (window.afroVisionAPI) return window.afroVisionAPI.deletePhoto(photoId);
+    return false;
+  },
+  deletePhotosBatch: async (photoIds) => {
+    if (window.afroVisionAPI) return window.afroVisionAPI.deletePhotosBatch(photoIds);
+    return 0;
+  },
+  duplicatePhoto: async (photoId) => {
+    if (window.afroVisionAPI) return window.afroVisionAPI.duplicatePhoto(photoId);
+    throw new Error('Duplicate only available in Electron desktop runtime');
+  },
+  movePhotosBatch: async (photoIds, targetProjectId) => {
+    if (window.afroVisionAPI) return window.afroVisionAPI.movePhotosBatch(photoIds, targetProjectId);
+    return 0;
+  },
 
   getPhotoMetadata: async (photoId) => {
     if (window.afroVisionAPI) return window.afroVisionAPI.getPhotoMetadata(photoId);
